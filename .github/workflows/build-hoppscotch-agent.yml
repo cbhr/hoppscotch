@@ -1,0 +1,51 @@
+name: Build Hoppscotch Electron Client
+
+on:
+  push:
+    branches:
+      - main  # 或者你要触发的分支
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🛎️ Checkout Code
+      uses: actions/checkout@v3
+
+    - name: 📦 Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: 📚 Install Dependencies
+      run: |
+        npm install -g pnpm
+        pnpm install
+
+    - name: 🛠️ Build Hoppscotch Web
+      run: |
+        pnpm run generate  # 生成 web 版本
+
+    - name: 📦 Build Electron App
+      run: |
+        cd electron
+        npm install
+        npm run build  # 编译 Electron 应用
+
+    - name: 🗂️ Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: hoppscotch-electron
+        path: electron/dist/*.*
+    - name: 🚀 Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: electron/dist/*.*
+        tag_name: v1.0.0
+        name: Hoppscotch Electron v1.0.0
+        body: |
+          Initial release of Hoppscotch Electron client.
